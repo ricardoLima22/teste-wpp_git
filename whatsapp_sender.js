@@ -15,13 +15,19 @@ if (!recipientName || !filePath) {
 
 const client = new Client({
     authStrategy: new LocalAuth(),
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018905396-alpha.html',
+    },
     puppeteer: {
         headless: 'new', // Use the newer, more stable headless mode
+        executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', // Use system chrome if available
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage', // Critical for Docker/GitHub Actions memory
-            '--disable-gpu'
+            '--disable-gpu',
+            '--disable-extensions'
         ],
         protocolTimeout: 60000
     }

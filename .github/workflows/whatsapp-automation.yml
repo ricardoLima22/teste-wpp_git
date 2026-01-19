@@ -26,9 +26,11 @@ jobs:
       - name: Install Node dependencies
         run: |
           npm install whatsapp-web.js qrcode-terminal
-          # Puppeteer dependencies for Ubuntu 24.04 (Noble)
+          # Install Google Chrome for stability
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update
-          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libasound2t64 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libharfbuzz0b libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrender1 libxtst6 libcups2 libxss1 libxrandr2 libv4l-0 libpci3
+          sudo apt-get install -y google-chrome-stable libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libasound2t64
 
       - name: Install Python dependencies
         run: pip install pandas openpyxl
