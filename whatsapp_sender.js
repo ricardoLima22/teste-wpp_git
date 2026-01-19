@@ -15,21 +15,21 @@ if (!recipientName || !filePath) {
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-    webVersionCache: {
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018905396-alpha.html',
-    },
     puppeteer: {
-        headless: 'new', // Use the newer, more stable headless mode
-        executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', // Use system chrome if available
+        headless: 'new',
+        executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage', // Critical for Docker/GitHub Actions memory
+            '--disable-dev-shm-usage',
             '--disable-gpu',
-            '--disable-extensions'
+            '--disable-extensions',
+            '--disable-web-security',
+            '--disable-features=IsolateOrigins,site-per-process' // Helps with context issues
         ],
-        protocolTimeout: 60000
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        protocolTimeout: 60000,
+        bypassCSP: true
     }
 });
 

@@ -5,10 +5,6 @@ console.log("Initializing WhatsApp Authentication...");
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-    webVersionCache: {
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018905396-alpha.html',
-    },
     puppeteer: {
         headless: 'new',
         executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
@@ -17,7 +13,8 @@ const client = new Client({
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu'
-        ]
+        ],
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 });
 
