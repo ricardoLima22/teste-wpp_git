@@ -54,9 +54,15 @@ def zip_session():
     with open(output_zip, "rb") as f:
         encoded_string = base64.b64encode(f.read()).decode('utf-8')
 
-    print("\n--- COPY THE TEXT BELOW TO GITHUB SECRETS (WPP_SESSION) ---")
-    print(encoded_string)
-    print("--- END OF TEXT ---\n")
+    # Save to a file to make it easier to copy without mistakes
+    with open("session_base64.txt", "w") as f:
+        f.write(encoded_string)
+
+    print("\n" + "="*50)
+    print("SUCESSO!")
+    print("O código Base64 foi salvo no arquivo: session_base64.txt")
+    print("Abra esse arquivo, copie TUDO o que está dentro e cole no GitHub.")
+    print("="*50 + "\n")
 
     os.remove(output_zip)
 

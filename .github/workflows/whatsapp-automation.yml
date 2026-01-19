@@ -34,9 +34,11 @@ jobs:
         run: pip install pandas openpyxl
 
       - name: Restore WhatsApp Session
+        env:
+          WPP_SESSION: ${{ secrets.WPP_SESSION }}
         run: |
-          if [ -n "${{ secrets.WPP_SESSION }}" ]; then
-            echo "${{ secrets.WPP_SESSION }}" | base64 -d > session.zip
+          if [ -n "$WPP_SESSION" ]; then
+            echo "$WPP_SESSION" | base64 -d > session.zip
             unzip session.zip
             rm session.zip
             echo "Session restored."
