@@ -1,0 +1,51 @@
+name: WhatsApp Automation
+
+on:
+  schedule:
+    - cron: '0 12 * * *' # Example: Runs every day at 12:00 UTC
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Node dependencies
+        run: |
+          npm install whatsapp-web.js qrcode-terminal
+          # Puppeteer dependencies for Ubuntu
+          sudo apt-get update
+          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libasound2
+
+      - name: Install Python dependencies
+        run: pip install pandas openpyxl
+
+      - name: Restore WhatsApp Session
+        run: |
+          if [ -n "${{ secrets.WPP_SESSION }}" ]; then
+            echo "${{ secrets.WPP_SESSION }}" | base64 -d > session.zip
+            unzip session.zip
+            rm session.zip
+            echo "Session restored."
+          else
+            echo "Error: WPP_SESSION secret not found."
+            exit 1
+          fi
+
+      - name: Run Python script
+        run: python main.py
+        env:
+          WPP_SESSION: ${{ secrets.WPP_SESSION }}
