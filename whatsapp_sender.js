@@ -1,6 +1,7 @@
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { Client, RemoteAuth, MessageMedia } = require('whatsapp-web.js');
+const { MongoStore } = require('wwebjs-mongo');
+const mongoose = require('mongoose');
 const fs = require('fs');
-const path = require('path');
 
 // Arguments: recipient_name (Group or contact), caption, file_path
 const args = process.argv.slice(2);
@@ -13,80 +14,102 @@ if (!recipientName || !filePath) {
     process.exit(1);
 }
 
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        headless: true,
-        executablePath: process.platform === 'win32' ? null : (process.env.CHROME_PATH || '/usr/bin/google-chrome'),
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
-            '--disable-extensions',
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process'
-        ],
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        protocolTimeout: 60000,
-        bypassCSP: true
-    }
-});
+const MONGODB_URI = process.env.MONGODB_URI;
 
-console.log("Initializing WhatsApp Client...");
-client.on('loading_screen', (percent, message) => {
-    console.log('LOADING SCREEN', percent, message);
-});
+if (!MONGODB_URI) {
+    console.error("Error: MONGODB_URI environment variable is not set.");
+    process.exit(1);
+}
 
-client.on('ready', async () => {
-    console.log('Client is ready!');
+mongoose.connect(MONGODB_URI).then(() => {
+    console.log("Connected to MongoDB for Sender");
+    const store = new MongoStore({ mongoose: mongoose });
 
-    try {
-        console.log("Fetching chats (this might take a moment if you have many)...");
-        const chats = await client.getChats();
+    const client = new Client({
+        authStrategy: new RemoteAuth({
+            store: store,
+            backupSyncIntervalMs: 300000
+        }),
+        puppeteer: {
+            headless: true,
+            executablePath: process.platform === 'win32' ? null : (process.env.CHROME_PATH || '/usr/bin/google-chrome'),
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-extensions',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process'
+            ],
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            protocolTimeout: 60000,
+            bypassCSP: true
+        }
+    });
 
-        console.log(`Searching for '${recipientName}'...`);
-        // We search in the cached chats first. 
-        // Tip: Using the exact ID (e.g. '123456789@g.us') would be near-instant.
-        let chat = chats.find(c => c.name === recipientName || c.id._serialized === recipientName);
+    console.log("Initializing WhatsApp Client...");
+    client.on('loading_screen', (percent, message) => {
+        console.log('LOADING SCREEN', percent, message);
+    });
 
-        if (chat) {
-            console.log(`Chat found: ${chat.name} (${chat.id._serialized})`);
+    client.on('ready', async () => {
+        console.log('Client is ready!');
 
-            if (fs.existsSync(filePath)) {
-                console.log("Uploading file...");
-                const media = MessageMedia.fromFilePath(filePath);
-                await client.sendMessage(chat.id._serialized, media, { caption: caption, sendSeen: false });
-                console.log(`File sent successfully!`);
+        try {
+            console.log("Fetching chats (this might take a moment if you have many)...");
+            const chats = await client.getChats();
+
+            console.log(`Searching for '${recipientName}'...`);
+            let chat = chats.find(c => c.name === recipientName || c.id._serialized === recipientName);
+
+            if (chat) {
+                console.log(`Chat found: ${chat.name} (${chat.id._serialized})`);
+
+                if (fs.existsSync(filePath)) {
+                    console.log("Uploading file...");
+                    const media = MessageMedia.fromFilePath(filePath);
+                    await client.sendMessage(chat.id._serialized, media, { caption: caption, sendSeen: false });
+                    console.log(`File sent successfully!`);
+                } else {
+                    console.error(`File not found: ${filePath}`);
+                    process.exit(1);
+                }
+
             } else {
-                console.error(`File not found: ${filePath}`);
+                console.error(`Chat '${recipientName}' not found.`);
+                console.log("Available chats (top 10):");
+                chats.slice(0, 10).forEach(c => console.log(`- ${c.name}`));
                 process.exit(1);
             }
 
-        } else {
-            console.error(`Chat '${recipientName}' not found.`);
-            console.log("Available chats (top 10):");
-            chats.slice(0, 10).forEach(c => console.log(`- ${c.name}`));
+            // Wait a bit to ensure message is sent
+            setTimeout(() => {
+                client.destroy();
+                mongoose.disconnect();
+                process.exit(0);
+            }, 5000);
+
+        } catch (error) {
+            console.error("Error sending message:", error);
+            client.destroy();
+            mongoose.disconnect();
             process.exit(1);
         }
+    });
 
-        // Wait a bit to ensure message is sent
-        setTimeout(() => {
-            client.destroy();
-            process.exit(0);
-        }, 5000);
+    client.on('remote_session_saved', () => {
+        console.log('Remote session saved to DB.');
+    });
 
-    } catch (error) {
-        console.error("Error sending message:", error);
-        client.destroy();
+    client.on('auth_failure', msg => {
+        console.error('AUTHENTICATION FAILURE', msg);
+        console.error('Please run "node whatsapp_auth.js" to authenticate.');
         process.exit(1);
-    }
-});
+    });
 
-client.on('auth_failure', msg => {
-    console.error('AUTHENTICATION FAILURE', msg);
-    console.error('Please run "node whatsapp_auth.js" to authenticate.');
+    client.initialize();
+}).catch(err => {
+    console.error("Failed to connect to MongoDB:", err);
     process.exit(1);
 });
-
-client.initialize();
