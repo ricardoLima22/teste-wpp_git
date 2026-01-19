@@ -87,6 +87,18 @@ mongoose.connect(MONGODB_URI).then(() => {
         console.log('Client is ready!');
         isReady = true;
         checkAndExit();
+
+        // Fallback: If 'remote_session_saved' doesn't fire in 60s, force exit.
+        // This happens sometimes when the session is already mostly synced.
+        setTimeout(() => {
+            if (!isSaved) {
+                console.log(">> SYSTEM: Session save event took too long. Assuming saved and closing...");
+                console.log('Closing client...');
+                client.destroy();
+                mongoose.disconnect();
+                process.exit(0);
+            }
+        }, 60000); // 60 seconds
     });
 
     client.on('remote_session_saved', () => {
