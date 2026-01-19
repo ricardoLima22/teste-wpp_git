@@ -56,7 +56,15 @@ mongoose.connect(MONGODB_URI).then(() => {
     });
 
     client.on('qr', (qr) => {
-        console.log('QR RECEIVED. Please scan it with your phone:');
+        console.log('QR RECEIVED. Generating Image...');
+        // qrcode-terminal is for terminal, we need 'qrcode' for image.
+        // Since we didn't install 'qrcode' package, we will stick to terminal but
+        // suggest the user to use "Zoom Out" (CTRL -) on browser.
+
+        // BETTER APPROACH: We will use a public API to generate a QR link for them to click in the logs
+        console.log("If the QR Code below is broken, OPEN THIS URL in your browser to scan:");
+        console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
+
         qrcode.generate(qr, { small: true });
     });
 
