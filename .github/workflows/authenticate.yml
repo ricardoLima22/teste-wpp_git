@@ -1,0 +1,31 @@
+name: Authenticate WhatsApp
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  authenticate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install whatsapp-web.js qrcode-terminal mongoose wwebjs-mongo
+          # Install Google Chrome
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libasound2t64
+
+      - name: Run Authentication Script
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        run: node whatsapp_auth.js

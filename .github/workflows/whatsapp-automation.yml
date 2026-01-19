@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Node dependencies
         run: |
-          npm install whatsapp-web.js qrcode-terminal mongoose wwebjs-mongo
+          npm install whatsapp-web.js qrcode-terminal
           # Install Google Chrome for stability
           wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
@@ -35,7 +35,21 @@ jobs:
       - name: Install Python dependencies
         run: pip install pandas openpyxl
 
+      - name: Restore WhatsApp Session
+        env:
+          WPP_SESSION: ${{ secrets.WPP_SESSION }}
+        run: |
+          if [ -n "$WPP_SESSION" ]; then
+            echo "$WPP_SESSION" | base64 -d > session.zip
+            unzip session.zip
+            rm session.zip
+            echo "Session restored."
+          else
+            echo "Error: WPP_SESSION secret not found."
+            exit 1
+          fi
+
       - name: Run Python script
         run: python main.py
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          WPP_SESSION: ${{ secrets.WPP_SESSION }}

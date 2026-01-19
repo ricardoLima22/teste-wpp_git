@@ -25,13 +25,28 @@ mongoose.connect(MONGODB_URI).then(() => {
         puppeteer: {
             headless: true,
             executablePath: process.platform === 'win32' ? null : (process.env.CHROME_PATH || '/usr/bin/google-chrome'),
-            args: [
+            args: process.platform === 'win32' ? [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu'
+            ] : [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--disable-extensions',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-accelerated-2d-canvas',
+                '--disable-software-rasterizer'
             ],
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            dumpio: true, // Enable logs for debug
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            protocolTimeout: 120000,
+            bypassCSP: true
         }
     });
 

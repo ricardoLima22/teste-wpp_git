@@ -51,9 +51,9 @@ mongoose.connect(MONGODB_URI).then(() => {
                 '--disable-accelerated-2d-canvas',
                 '--disable-software-rasterizer'
             ],
-            dumpio: true, // Enable browser logs to see why it hangs
+            dumpio: true, // Enable logs for debug
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            protocolTimeout: 120000, // Increased timeout 
+            protocolTimeout: 120000,
             bypassCSP: true
         }
     });
