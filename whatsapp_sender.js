@@ -33,7 +33,12 @@ mongoose.connect(MONGODB_URI).then(() => {
         puppeteer: {
             headless: true,
             executablePath: process.platform === 'win32' ? null : (process.env.CHROME_PATH || '/usr/bin/google-chrome'),
-            args: [
+            args: process.platform === 'win32' ? [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu'
+            ] : [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
