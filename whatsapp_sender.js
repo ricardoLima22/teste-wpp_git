@@ -16,8 +16,8 @@ if (!recipientName || !filePath) {
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: 'new',
-        executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
+        headless: true,
+        executablePath: process.platform === 'win32' ? null : (process.env.CHROME_PATH || '/usr/bin/google-chrome'),
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -25,12 +25,17 @@ const client = new Client({
             '--disable-gpu',
             '--disable-extensions',
             '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process' // Helps with context issues
+            '--disable-features=IsolateOrigins,site-per-process'
         ],
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         protocolTimeout: 60000,
         bypassCSP: true
     }
+});
+
+console.log("Initializing WhatsApp Client...");
+client.on('loading_screen', (percent, message) => {
+    console.log('LOADING SCREEN', percent, message);
 });
 
 client.on('ready', async () => {

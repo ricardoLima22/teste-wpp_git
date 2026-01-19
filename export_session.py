@@ -10,11 +10,11 @@ def zip_session():
         print(f"Error: {folder_to_zip} folder not found. Please authenticate locally first.")
         return
 
-    # Aggressive list of keywords/paths to ignore
+    # Updated ignore list: still pruning bloom but KEEPING essential IndexedDB metadata
     ignore_list = [
-        'Cache', 'GPUCache', 'Service Worker', 'IndexedDB', 'Code Cache', 
+        'Cache', 'GPUCache', 'Service Worker', 'Code Cache', 
         'blob_storage', 'VideoDecodeStats', 'Platform Notifications',
-        'LOG', 'LOG.old', 'LOCK', '.tmp', 'QuotaManager', 
+        'LOG', 'LOG.old', '.tmp', 'QuotaManager', 
         'Reporting and NEL', 'Trust Tokens', 'Segmentation Platform',
         'Web Data', 'History', 'Login Data', 'Favicons', 'shared_proto_db',
         'Collaboration', 'DataSharing', 'Extension', 'GCM Store', 'Sessions',
@@ -23,7 +23,7 @@ def zip_session():
         'parcel_tracking_db', 'power_bookmarks', 'Safe Browsing', 'segmentation_platform'
     ]
 
-    print("Zipping session (Aggressive pruning)...")
+    print("Zipping session (Balancing size vs completeness)...")
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(folder_to_zip):
             # Prune directories from search
@@ -33,13 +33,14 @@ def zip_session():
                 if any(x in file for x in ignore_list):
                     continue
                 
+                # Exclude large .log files in LevelDB/IndexedDB that might not be critical for auth
+                if file.endswith('.log') and os.path.getsize(os.path.join(root, file)) > 100000:
+                    continue
+
                 file_path = os.path.join(root, file)
                 
-                # Filter for only essential authentication files
-                # 1. Local Storage (LevelDB)
-                # 2. Network (Cookies)
-                # 3. Local State / Preferences at root
-                is_essential = any(x in file_path for x in ['Local Storage', 'Network', 'Local State', 'Preferences'])
+                # MUST include Local Storage, Network (Cookies), and IndexedDB for modern WhatsApp
+                is_essential = any(x in file_path for x in ['Local Storage', 'Network', 'Local State', 'Preferences', 'IndexedDB'])
                 
                 if is_essential:
                     zipf.write(file_path)
