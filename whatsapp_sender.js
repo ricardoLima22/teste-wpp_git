@@ -16,9 +16,14 @@ if (!recipientName || !filePath) {
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        protocolTimeout: 60000 // Increase timeout to 60 seconds
+        headless: 'new', // Use the newer, more stable headless mode
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', // Critical for Docker/GitHub Actions memory
+            '--disable-gpu'
+        ],
+        protocolTimeout: 60000
     }
 });
 
