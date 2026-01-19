@@ -16,7 +16,7 @@ if (!MONGODB_URI) {
 mongoose.connect(MONGODB_URI).then(() => {
     console.log("Connected to MongoDB");
     const store = new MongoStore({ mongoose: mongoose });
-    
+
     const client = new Client({
         authStrategy: new RemoteAuth({
             store: store,
@@ -45,22 +45,31 @@ mongoose.connect(MONGODB_URI).then(() => {
         qrcode.generate(qr, { small: true });
     });
 
+    let isReady = false;
+    let isSaved = false;
+
+    const checkAndExit = () => {
+        if (isReady && isSaved) {
+            console.log(">> SYSTEM: Session fully saved and Client ready. Closing in 5 seconds...");
+            setTimeout(() => {
+                console.log('Closing client...');
+                client.destroy();
+                mongoose.disconnect();
+                process.exit(0);
+            }, 5000);
+        }
+    };
+
     client.on('ready', () => {
         console.log('Client is ready!');
-        console.log('Authentication successful and session saved to MongoDB.');
-        console.log('You can now use whatsapp_sender.js to send messages.');
-
-        // Close after successful auth
-        setTimeout(() => {
-            console.log('Closing client...');
-            client.destroy();
-            mongoose.disconnect(); // Close Mongo connection
-            process.exit(0);
-        }, 5000);
+        isReady = true;
+        checkAndExit();
     });
-    
+
     client.on('remote_session_saved', () => {
-        console.log('Remote session saved to DB.');
+        console.log('Remote session saved to DB!');
+        isSaved = true;
+        checkAndExit();
     });
 
     client.on('authenticated', () => {
