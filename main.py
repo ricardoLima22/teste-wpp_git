@@ -25,7 +25,8 @@ def send_whatsapp_file(recipient, file_path, caption=""):
         return False
 
 def main():
-    file_to_send = r"C:\Users\Sirtec\Desktop\teste-wpp_git\docs\RS_Registros_de_ponto_(19.01.2026).xlsx"
+    # Use relative path for GitHub Actions/Cross-platform compatibility
+    file_to_send = os.path.join("docs", "RS_Registros_de_ponto_(19.01.2026).xlsx")
     
     # Keeping the user's specific read parameters if they added them
     try:
