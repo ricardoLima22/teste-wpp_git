@@ -46,6 +46,7 @@ mongoose.connect(MONGODB_URI).then(() => {
                 '--disable-accelerated-2d-canvas',
                 '--disable-software-rasterizer'
             ],
+            dumpio: true, // Enable browser logs to see why it hangs
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             protocolTimeout: 120000, // Increased timeout 
             bypassCSP: true
@@ -55,6 +56,14 @@ mongoose.connect(MONGODB_URI).then(() => {
     console.log("Initializing WhatsApp Client...");
     client.on('loading_screen', (percent, message) => {
         console.log('LOADING SCREEN', percent, message);
+    });
+
+    // Handle QR code (Auth failed)
+    client.on('qr', (qr) => {
+        console.error("ERROR: Session restore failed! WhatsApp is requesting a new QR Code.");
+        console.error("This means the saved session in MongoDB is invalid or incompatible.");
+        console.error("Please run 'node whatsapp_auth.js' locally again to refresh the session.");
+        process.exit(1);
     });
 
     client.on('ready', async () => {
