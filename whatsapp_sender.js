@@ -85,19 +85,20 @@ mongoose.connect(MONGODB_URI).then(() => {
                 console.log(`Chat found: ${chat.name} (${chat.id._serialized})`);
 
                 if (fs.existsSync(filePath)) {
-                    // WARM UP: Send text first to establish E2E encryption keys
-                    if (caption) {
-                        console.log("Sending caption as text first (Warm-up)...");
-                        await client.sendMessage(chat.id._serialized, caption);
-                        // Wait 2 seconds for encryption handshake
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
+                    // WARM UP: Send "Typing..." state to establish E2E encryption keys
+                    // This is safer than sending text and fixes the "Waiting for message" issue
+                    console.log("Sending 'Typing...' state (Warm-up)...");
+                    await chat.sendStateTyping();
+
+                    // Wait 5 seconds for keys to exchange
+                    await new Promise(r => setTimeout(r, 5000));
+
+                    await chat.clearState();
 
                     console.log("Uploading file...");
                     const media = MessageMedia.fromFilePath(filePath);
-                    // Send file without caption (since we sent it before) to avoid double caption issues or large payload
-                    //await client.sendMessage(chat.id._serialized, media, { caption: caption, sendSeen: false });
-                    await client.sendMessage(chat.id._serialized, media, { sendSeen: false });
+                    // Send file with caption
+                    await client.sendMessage(chat.id._serialized, media, { caption: caption, sendSeen: false });
                     console.log(`File sent successfully!`);
                 } else {
                     console.error(`File not found: ${filePath}`);
