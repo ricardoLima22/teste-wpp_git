@@ -101,12 +101,14 @@ mongoose.connect(MONGODB_URI).then(() => {
                 process.exit(1);
             }
 
-            // Wait a bit to ensure message is sent
+            // Wait to ensure message is sent and encryption keys are exchanged (Fixes "Waiting for message" error)
+            console.log("Waiting 30 seconds to ensure delivery and encryption sync...");
             setTimeout(() => {
+                console.log("Closing client...");
                 client.destroy();
                 mongoose.disconnect();
                 process.exit(0);
-            }, 5000);
+            }, 30000);
 
         } catch (error) {
             console.error("Error sending message:", error);
