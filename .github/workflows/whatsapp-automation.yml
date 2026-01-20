@@ -1,8 +1,7 @@
-name: WhatsApp Automation v2
+name: WhatsApp Automation
 
 on:
   schedule:
-#    - cron: '*/5 * * * *' # Example: Runs every 5 minutes
     - cron: '0 12 * * *' # Example: Runs every day at 12:00 UTC
   workflow_dispatch: # Allows manual trigger
 
@@ -32,7 +31,6 @@ jobs:
           sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libasound2t64
-
       - name: Install Python dependencies
         run: pip install pandas openpyxl
 
