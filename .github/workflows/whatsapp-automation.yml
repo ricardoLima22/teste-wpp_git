@@ -2,7 +2,8 @@ name: WhatsApp Automation
 
 on:
   schedule:
-    - cron: '0 12 * * *' # Example: Runs every day at 12:00 UTC
+    - cron: '*/5 * * * *' # Example: Runs every 5 minutes
+#    - cron: '0 12 * * *' # Example: Runs every day at 12:00 UTC
   workflow_dispatch: # Allows manual trigger
 
 jobs:
