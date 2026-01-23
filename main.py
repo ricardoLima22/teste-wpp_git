@@ -40,7 +40,7 @@ def main():
 
     # IMPORTANT: Change 'NAME_OF_GROUP_OR_CONTACT' to the actual name on your WhatsApp
     recipient_name = "REGISTRO DE PONTO" 
-    send_whatsapp_file(recipient_name, file_to_send, "TESTETESTETSETSETSETSETSETSETSET")
+    send_whatsapp_file(recipient_name, file_to_send, "TESTE")
 
 if __name__ == "__main__":
     main()
