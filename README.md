@@ -178,14 +178,5 @@ Fluxo recomendado para deploy em produção
 1. Configure o MongoDB Atlas e crie o secret `MONGODB_URI` no GitHub.
 2. Rode o workflow **Authenticate WhatsApp** no GitHub e escaneie o QR a partir do link de log.
 3. Após confirmação nos logs de que a sessão foi salva, dispare (ou aguarde) o workflow **WhatsApp Automation** que usa a mesma `MONGODB_URI` para recuperar a sessão e enviar arquivos.
-
-Boas práticas e segurança
-- Não deixe `0.0.0.0/0` permanentemente em Network Access; isso é apenas para facilitar a integração com runners públicos. Em produção, prefira uma arquitetura que ofereça IPs fixos ou rede privada.
-- Use um usuário MongoDB com permissões mínimas (apenas o banco necessário) e rotacione a senha se suspeitar de exposição.
-- Mantenha o repositório privado se não quiser que o QR fique visível a terceiros.
-
-Se quiser, eu posso:
-- Gerar automaticamente as instruções para criar o secret no GitHub (com screenshots em texto) e adicionar um `run-auth.yml` de exemplo com mais logs.
-- Criar um `requirements.txt` e um `run.ps1` para automatizar localmente.
-
+4. 
 Arquivo atualizado: [README.md](README.md)
