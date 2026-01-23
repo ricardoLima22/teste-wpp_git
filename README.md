@@ -1,4 +1,4 @@
-# Teste de envio WhatsApp (autodidata)
+# Teste de envio WhatsApp
 
 Este repositório contém um exemplo simples para enviar um arquivo via WhatsApp usando `whatsapp-web.js` (Node) com orquestração a partir de um script Python. O objetivo deste README é ser totalmente autodidata: passos claros, comandos práticos e soluções para problemas comuns.
 
